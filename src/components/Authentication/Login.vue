@@ -1,56 +1,93 @@
 <template>
-
   <base-card>
     <h2>Login Here</h2>
-    <form @submit.prevent="handleLogin">
-      <div class="form-control">
-        <label for="username">User Name</label>
-        <input type="username" name="username" id="username" />
-      </div>
-      <div class="form-control">
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" />
-      </div>
-      <div>
-        <base-button type="submit">Login</base-button>
-      </div>
-    </form>
+    <ValidationObserver v-slot="{ handleSubmit }">
+      <form @submit.prevent="handleSubmit(handleLogin)">
+        <div class="form-control">
+          <label for="username">Username</label>
+          <ValidationProvider rules="required" v-slot="{ errors }">
+            <input type="text" id="username" v-model="loginData.username" />
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+        </div>
+
+        <div class="form-control">
+          <label for="password">Password</label>
+          <ValidationProvider rules="required" v-slot="{ errors }">
+            <input type="password" id="password" v-model="loginData.password" />
+            <span>{{ errors[0] }}</span>
+          </ValidationProvider>
+        </div>
+
+        <div>
+          <base-button type="submit">Login</base-button>
+        </div>
+      </form>
+    </ValidationObserver>
   </base-card>
 </template>
 
-
 <script>
+import axios from 'axios';
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate';
+import { required } from 'vee-validate/dist/rules';
+
+extend('required', {
+  ...required,
+  message: 'This field is required',
+});
+
 export default {
-  name: "LoginComponent",
+  name: 'LoginComponent',
+  components: {
+    ValidationObserver,
+    ValidationProvider,
+  },
+  data() {
+    return {
+      loginData: {
+        password: '',
+        username:'',
+        
+      }
+    };
+  },
   methods: {
     async handleLogin() {
-      try {
-       
-        const response = await this.authenticateUser();
-        if (response.success) {
+    try {
 
+      const person = {
+        user_name:this.loginData.username,
+        password:this.loginData.password,
+      };
+
+      console.log(person);
+
+      const response = await axios.get('http://localhost:5029/api/Student/id', person);
+        if (response.data.status_code) {
+          
           this.$router.push('/student-details');
         } else {
-         
           console.error('Login failed:', response.message);
         }
       } catch (error) {
-
         console.error('Error during login:', error);
       }
     },
-    authenticateUser() {
 
+
+    loginUser() {
+     
       return new Promise((resolve, reject) => {
-        
+      
         setTimeout(() => {
           const success = true; 
-          if (success) {
-            resolve({ success: true });
-          } else {
-            reject(new Error('Authentication failed'));
-          }
-        }, 1000); 
+              if (success) {
+                resolve({ success: true });
+              } else {
+                reject(new Error('Login failed'));
+              }
+            }, 1000); 
       });
     },
   },
@@ -58,23 +95,3 @@ export default {
 </script>
 
 
-<style scoped>
-input {
-  display: block;
-  width: 100%;
-  font: inherit;
-  padding: 0.15rem;
-  border: 1px solid #ccc;
-}
-
-input:focus {
-  outline: none;
-  border-color: #3a0061;
-  background-color: #f7ebff;
-}
-
-.form-control {
-  margin: 1rem 0;
-}
-
-</style>

@@ -1,0 +1,89 @@
+.add-button-container {
+    margin-top: 20px;
+  }
+  
+  .add-button {
+    background-color: #2196f3;
+    color: white;
+    border: 1px solid #2196f3;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .add-button:hover {
+    background-color: #0b7dda;
+  }
+  
+  .edit-button {
+    background-color: #4caf50 ;
+    color: white;
+    border: 1px solid #4caf50;
+    border-radius: 4px ;
+    padding: 5px 10px;
+    margin-right: 8px; 
+    margin-left: 20px; 
+  }
+  
+  .edit-button:hover {
+    background-color: #257d6e ;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+    border: 1px solid #f44336;
+    border-radius: 4px;
+    padding: 5px 10px;
+  }
+  
+  .delete-button:hover {
+    background-color: #df6f43;
+  }
+  
+  .edit-button {
+    background-color: #4caf50;
+    color: white;
+    border: 1px solid #4caf50;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-right: 8px; 
+  }
+  
+  .edit-button:hover {
+    background-color: #257d6e;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+    border: 1px solid #f44336;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .delete-button:hover {
+    background-color: #df6f43;
+  }
+
+  input {
+    display: block;
+    width: 100%;
+    font: inherit;
+    padding: 0.15rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #3a0061;
+    background-color: #f7ebff;
+  }
+  
+  .form-control {
+    margin: 1rem 0;
+  }

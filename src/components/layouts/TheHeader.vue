@@ -14,10 +14,10 @@ export default {
 </script>
 
 <style scoped>
-    /* Lets choose a color palette */
     header {
         background: #03045E;
         padding: 1rem 0;
+        border-radius: 5px;
     }
     header h1 {
         color: #fff;

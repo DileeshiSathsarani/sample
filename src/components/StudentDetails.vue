@@ -1,158 +1,130 @@
 <template>
   <div>
     <h1>Student Details</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Address</th>
-          <th>Email</th>
-          <th>Contact Number</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(student, index) in students" :key="index">
-          <td>{{ student.firstname }}</td>
-          <td>{{ student.lastname }}</td>
-          <td>{{ student.address }}</td>
-          <td>{{ student.email }}</td>
-          <td>{{ student.contactnumber }}</td>
-          <td>
-          <button class="edit-button" @click="editStudent(index)">Edit</button>
-          <button class="delete-button" @click="deleteStudent(index)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
 
-    <!-- Subject Details  -->
-  <h1>Subject Details</h1>
-  
-  <table>
-    <thead>
-      <tr>
-        <th>Subject Code</th>
-        <th>Subject Name</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-   
-    <tbody>
-      <tr v-for="(subject, index) in subjects" :key="index">
-        <td>{{ subject.subjectCode }}</td>
-        <td>{{ subject.subjectName }}</td>
-        <td>
-          <button class ="add-button" @click="addsubject(index)">Add</button>
-          <button class="edit-button" @click="editSubject(index)">Edit</button>
-          <button class="delete-button" @click="deleteSubject(index)">Delete</button>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <data-table :data="students" :columns="studentColumns" :hasActions="true">
+      <template v-slot:actions="{ index }">
+        <button class="edit-button" @click="openEditModal(index)">Edit</button>
+        <button class="delete-button" @click="deleteStudent(index)">Delete</button>
+      </template>
+    </data-table>
 
+    <!-- EditModal component for Editing -->
+    <edit-modal
+      :is-active="isEditModalActive"
+      :edited-first-name="editedFirstName"
+      :edited-last-name="editedLastName"
+      :edited-address="editedAddress"
+      :edited-email="editedEmail"
+      :edited-contact-number="editedContactNumber"
+      @save-changes="handleSaveChanges"
+      @close-modal="closeEditModal"
+    ></edit-modal>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+import DataTable from '@/components/DataTable.vue';
+import EditModal from '@/components/EditModal.vue';
+import { eventBus } from '@/App';
+
 export default {
-  name: "StudentDetails",
+  name: 'StudentDetails',
+  components: {
+    DataTable,
+    EditModal,
+  },
   data() {
     return {
-      students: [
-        {
-          firstname: "John",
-          lastname: "Doe",
-          address: "123 Main St",
-          email: "john.doe@example.com",
-          username: "john_doe",
-          contactnumber: "1234567890",
-        },
-      ],
-        subjects: [
-      {
-        subjectCode: "CS101",
-        subjectName: "Introduction to Computer Science",
-      },
-
-      ],
+      students: [],
+      isEditModalActive: false,
+      editedFirstName: '',
+      editedLastName: '',
+      editedAddress: '',
+      editedEmail: '',
+      editedContactNumber: '',
+      editedStudentIndex: null,
     };
   },
-  methods: {
-    editStudent(index) {
-      const editedStudent = { ...this.students[index] };
-      console.log("Editing student:", editedStudent);
+  computed: {
+    studentColumns() {
+      return [
+        { field: 'first_name', label: 'First Name' },
+        { field: 'last_name', label: 'Last Name' },
+        { field: 'address', label: 'Address' },
+        { field: 'email', label: 'Email' },
+        { field: 'contact_number', label: 'Contact Number' },
+        { field: 'actions', label: 'Actions', slot: 'actions' },
+      ];
     },
-    
+  },
+  created() {
+    this.fetchStudents();
 
-    deleteStudent(index) {
-      const deletedStudent = { ...this.students[index] };
-      if (confirm(`Are you sure you want to delete ${deletedStudent.firstname} ${deletedStudent.lastname}?`)) {
-        this.students.splice(index, 1);
-        console.log("Deleted student:", deletedStudent);
+    eventBus.$on('edit-item', ({ row, index }) => {
+      this.openEditModal(row, index);
+    });
+  },
+  methods: {
+    async fetchStudents() {
+      try {
+        const response = await axios.get('http://localhost:5029/api/Student/id');
+        this.students = response.data.data.student;
+      } catch (error) {
+        console.error('Error fetching students:', error);
       }
     },
 
-    editSubject(index) {
-    const editedSubject = { ...this.subjects[index] };
-    
-    console.log("Editing subject:", editedSubject);
-  },
-  deleteSubject(index) {
-    const deletedSubject = { ...this.subjects[index] };
-    if (confirm(`Are you sure you want to delete ${deletedSubject.subjectName}?`)) {
-      this.subjects.splice(index, 1);
-      console.log("Deleted subject:", deletedSubject);
-    }
-  },
+    openEditModal(row, index) {
+      this.editedStudentIndex = index;
+      const editedStudent = row;
+      this.editedFirstName = editedStudent.first_name;
+      this.editedLastName = editedStudent.last_name;
+      this.editedAddress = editedStudent.address;
+      this.editedEmail = editedStudent.email;
+      this.editedContactNumber = editedStudent.contact_number;
+      this.isEditModalActive = true;
+    },
+
+    handleSaveChanges(updatedValues) {
+      this.editedFirstName = updatedValues.editedFirstName;
+      this.editedLastName = updatedValues.editedLastName;
+      this.editedAddress = updatedValues.editedAddress;
+      this.editedEmail = updatedValues.editedEmail;
+      this.editedContactNumber = updatedValues.editedContactNumber;
+
+      // Additional logic after saving changes
+      // ...
+
+      this.closeEditModal();
+    },
+
+    closeEditModal() {
+      this.isEditModalActive = false;
+      this.editedStudentIndex = null;
+    },
+
+    deleteStudent(index) {
+      const deletedStudent = { ...this.students[index] };
+
+      if (confirm(`Are you sure you want to delete ${deletedStudent.id}?`)) {
+        this.students = this.students.filter((student, i) => i !== index);
+
+        axios.delete(`http://localhost:5029/api/Student/${deletedStudent.id}`)
+          .then(response => {
+            if (response.data.id === 200) {
+              console.log("Deleted student:", deletedStudent);
+            } else {
+              console.error('Failed to delete student:', response.message);
+            }
+          })
+          .catch(error => {
+            this.students.push(deletedStudent);
+            console.error('Error deleting student:', error);
+          });
+      }
+    },
   },
 };
-
-
 </script>
-
-<style scoped>
-  table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-th, td {
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-th {
-  background-color: #f2f2f2;
-}
-
-button {
-  padding: 8px 12px;
-  margin-right: 5px;
-  cursor: pointer;
-  text-align: center;
-}
-
-.add-button{
-  background-color: #2fb8a5;
-  color: white;
-  border: 1px solid #89c6d1;
-}
-.edit-button {
-  background-color: #4caf50;
-  color: white;
-  border: 1px solid #4caf50;
- 
-}
-
-.delete-button {
-  background-color: #f44336;
-  color: white;
-  border: 1px solid #f44336;
-  
-}
-</style>
