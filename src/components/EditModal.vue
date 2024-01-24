@@ -1,74 +1,87 @@
 <template>
-  <div class="modal" v-if="isActive">
-    <div class="modal-content">
-      <span class="close" @click="closeModal">&times;</span>
-      <h2>Edit Student</h2>
+  <section>
+      <b-button
+          label="Launch component modal"
+          type="is-primary"
+          size="is-medium"
+          @click="isComponentModalActive = true" />
 
-      <form @submit.prevent="handleSubmit(saveChanges)">
-        <div>
-          <label for="editFirstName">First Name</label>
-          <input v-model="localEditedFirstName" type="text" id="editFirstName" />
-
-          <label for="editLastName">Last Name</label>
-          <input v-model="localEditedLastName" type="text" id="editLastName" />
-
-          <label for="editAddress">Address</label>
-          <input v-model="localEditedAddress" type="text" id="editAddress" />
-
-          <label for="editEmail">Email</label>
-          <input v-model="localEditedEmail" type="text" id="editEmail" />
-
-          <label for="editContactNumber">Contact Number</label>
-          <input v-model="localEditedContactNumber" type="text" id="editContactNumber" />
-        </div>
-
-        <div class="buttons">
-          <button @click="saveChanges">Save Changes</button>
-          <button @click="closeModal">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
+      <b-modal
+          v-model="isComponentModalActive"
+          has-modal-card
+          trap-focus
+          :destroy-on-hide="false"
+          aria-role="dialog"
+          aria-label="Example Modal"
+          close-button-aria-label="Close"
+          aria-modal>
+          <template #default="props">
+              <modal-form v-bind="formProps" @close="props.close"></modal-form>
+          </template>
+      </b-modal>
+  </section>
 </template>
 
 <script>
-export default {
-  props: 
-  [
-    'isActive', 
-    'editedFirstName', 
-    'editedLastName', 
-    'editedAddress', 
-    'editedEmail', 
-    'editedContactNumber'
-  ],
-  
-  data() {
-    return {
-      localEditedFirstName: this.editedFirstName,
-      localEditedLastName: this.editedLastName,
-      localEditedAddress: this.editedAddress,
-      localEditedEmail: this.editedEmail,
-      localEditedContactNumber: this.editedContactNumber,
-    };
-  },
-  methods: {
-    handleSubmit(callback) {
-      callback();
-      this.closeModal();
-    },
-    saveChanges() {
-      this.$emit('save-changes', {
-        editedFirstName: this.localEditedFirstName,
-        editedLastName: this.localEditedLastName,
-        editedAddress: this.localEditedAddress,
-        editedEmail: this.localEditedEmail,
-        editedContactNumber: this.localEditedContactNumber,
-      });
-    },
-    closeModal() {
-      this.$emit('close-modal');
-    },
-  },
-};
+  const ModalForm = {
+      props: ['email', 'password', 'canCancel'],
+      template: `
+          <form action="">
+              <div class="modal-card" style="width: auto">
+                  <header class="modal-card-head">
+                      <p class="modal-card-title">Login</p>
+                      <button
+                          type="button"
+                          class="delete"
+                          @click="$emit('close')"/>
+                  </header>
+                  <section class="modal-card-body">
+                      <b-field label="Email">
+                          <b-input
+                              type="email"
+                              :value="email"
+                              placeholder="Your email"
+                              required>
+                          </b-input>
+                      </b-field>
+
+                      <b-field label="Password">
+                          <b-input
+                              type="password"
+                              :value="password"
+                              password-reveal
+                              placeholder="Your password"
+                              required>
+                          </b-input>
+                      </b-field>
+
+                      <b-checkbox>Remember me</b-checkbox>
+                  </section>
+                  <footer class="modal-card-foot">
+                      <b-button
+                          label="Close"
+                          @click="$emit('close')" />
+                      <b-button
+                          label="Login"
+                          type="is-primary" />
+                  </footer>
+              </div>
+          </form>
+      `
+  }
+
+  export default {
+      components: {
+          ModalForm
+      },
+      data() {
+          return {
+              isComponentModalActive: false,
+              formProps: {
+                  email: 'evan@you.com',
+                  password: 'testing'
+              }
+          }
+      }
+  }
 </script>
