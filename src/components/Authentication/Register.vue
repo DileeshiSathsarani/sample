@@ -52,27 +52,27 @@ export default {
   },
   methods: {
     async handleRegister() {
-    try {
-      console.log(JSON.stringify(this.loginData));
+      const userData = {
+      firstname: this.loginData.firstname,
+      lastname: this.loginData.lastname,
+      address: this.loginData.address,
+      email: this.loginData.email,
+      password: this.loginData.password,
+    };
 
-      const response = await axios.post('http://localhost:5029/api/Student/register', JSON.stringify(this.loginData), {
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8;',
-          'Accept' : '*/*',
-        },
-      });
-        if (response.data.success) {
-          
-          this.$router.push('/student-details');
-        } else {
+  try {
+    const response = await axios.post('http://localhost:5029/api/Student/register',userData); 
+    
+    if (response.data.success) {
+      this.$router.push('/student-details');
+    } else {
+      console.error('Registration failed:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error during registration:', error);
+  }
+},
 
-          console.error('Registration failed:', response.message);
-        }
-      } catch (error) {
-       
-        console.error('Error during registration:', error);
-      }
-    },
     registerUser() {
      
       return new Promise((resolve, reject) => {
