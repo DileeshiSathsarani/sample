@@ -1,50 +1,53 @@
+<!-- StudentDetails.vue -->
 <template>
   <div>
     <h1>Student Details</h1>
-
-    <data-table :data="students" :columns="studentColumns" :hasActions="true">
+    <DataTable :data="students" :columns="studentColumns" :hasActions="true" @edit-user="handleEditUser" @delete-user="handleDeleteUser">
       <template v-slot:actions="{ index }">
         <button class="edit-button" @click="openEditModal(index)">Edit</button>
         <button class="delete-button" @click="deleteStudent(index)">Delete</button>
       </template>
-    </data-table>
-
-    <!-- EditModal component for Editing -->
-    <edit-modal
-      :is-active="isEditModalActive"
-      :edited-first-name="editedFirstName"
-      :edited-last-name="editedLastName"
-      :edited-address="editedAddress"
-      :edited-email="editedEmail"
-      :edited-contact-number="editedContactNumber"
-      @save-changes="handleSaveChanges"
-      @close-modal="closeEditModal"
-    ></edit-modal>
+    </DataTable>
+    <ModalForm v-if="isComponentModalActive" :student="formProps.student" :canCancel="true" @close="closeModal" @save-changes="saveChanges" />
+    
+    <router-link :to="{ name: 'SubjectDetails' }">
+      <b-button type="is-info">Go to Subject Details</b-button>
+    </router-link>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
 import DataTable from '@/components/DataTable.vue';
-import EditModal from '@/components/EditModal.vue';
-import { eventBus } from '@/App';
+import ModalForm from '@/components/EditModal.vue';
 
 export default {
   name: 'StudentDetails',
   components: {
     DataTable,
-    EditModal,
+    ModalForm
   },
   data() {
     return {
       students: [],
-      isEditModalActive: false,
+      formProps: {
+        student: {
+          first_name: '',
+          last_name: '',
+          address: '',
+          email: '',
+          contact_number: '',
+        },
+      },
+      isComponentModalActive: false,
       editedFirstName: '',
       editedLastName: '',
       editedAddress: '',
       editedEmail: '',
       editedContactNumber: '',
       editedStudentIndex: null,
+      modalTitle: 'Edit Student',
+      modalAction: 'Save Changes',
     };
   },
   computed: {
@@ -61,10 +64,6 @@ export default {
   },
   created() {
     this.fetchStudents();
-
-    eventBus.$on('edit-item', ({ row, index }) => {
-      this.openEditModal(row, index);
-    });
   },
   methods: {
     async fetchStudents() {
@@ -75,42 +74,17 @@ export default {
         console.error('Error fetching students:', error);
       }
     },
-
-    openEditModal(row, index) {
-      this.editedStudentIndex = index;
-      const editedStudent = row;
-      this.editedFirstName = editedStudent.first_name;
-      this.editedLastName = editedStudent.last_name;
-      this.editedAddress = editedStudent.address;
-      this.editedEmail = editedStudent.email;
-      this.editedContactNumber = editedStudent.contact_number;
-      this.isEditModalActive = true;
+    handleEditUser(index) {
+      this.isComponentModalActive = true;
+      this.formProps.student = { ...index };
     },
-
-    handleSaveChanges(updatedValues) {
-      this.editedFirstName = updatedValues.editedFirstName;
-      this.editedLastName = updatedValues.editedLastName;
-      this.editedAddress = updatedValues.editedAddress;
-      this.editedEmail = updatedValues.editedEmail;
-      this.editedContactNumber = updatedValues.editedContactNumber;
-
-      // Additional logic after saving changes
-      // ...
-
-      this.closeEditModal();
+    closeModal() {
+      this.isComponentModalActive = false;
     },
-
-    closeEditModal() {
-      this.isEditModalActive = false;
-      this.editedStudentIndex = null;
-    },
-
-    deleteStudent(index) {
-      const deletedStudent = { ...this.students[index] };
-
+    handleDeleteUser(id) {
+      const deletedStudent = { ...this.students[id] };
       if (confirm(`Are you sure you want to delete ${deletedStudent.id}?`)) {
-        this.students = this.students.filter((student, i) => i !== index);
-
+        this.students = this.students.filter((student, i) => i !== id);
         axios.delete(`http://localhost:5029/api/Student/${deletedStudent.id}`)
           .then(response => {
             if (response.data.id === 200) {
@@ -125,6 +99,65 @@ export default {
           });
       }
     },
-  },
-};
+    deleteStudent(index) {
+      console.log(index);
+    },
+    saveChanges(updatedStudent) {
+      this.formProps.student = { ...this.formProps.student, ...updatedStudent };
+      this.isComponentModalActive = false;
+    },
+
+    editStudent(id) {
+  const editedStudent = { ...this.students[id] };
+  const newFirstName = prompt("Enter First Name:", editedStudent.first_name);
+  const newLastName = prompt("Enter Last Name:", editedStudent.last_name);
+  const newAddress = prompt("Enter Address:", editedStudent.address);
+  const newEmail = prompt("Enter Email:", editedStudent.email);
+  const newUserName = prompt("Enter User Name:", editedStudent.user_name);
+  const newContactNumber = prompt("Enter Contact Number:", editedStudent.contact_number);
+  const newPassword = prompt("Enter Password:", editedStudent.password);
+
+  const updatedStudent = {
+    first_name: newFirstName,
+    last_name: newLastName,
+    address: newAddress,
+    email: newEmail,
+    user_name: newUserName,
+    contact_number: newContactNumber,
+    password: newPassword,
+  };
+
+  if (this.editedStudentIndex !== null) {
+    axios.put(`http://localhost:5029/api/Student/${this.students[id].id}`, updatedStudent)
+      .then(response => {
+        if (response.data.status_code === 200) {
+          this.fetchStudents();
+          console.log("Edited student:", updatedStudent);
+        } else {
+          console.error('Failed to edit student:', response.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error editing student:', error);
+      });
+  } else {
+    axios.post('http://localhost:5029/api/Student/save', updatedStudent)
+      .then(response => {
+        if (response.data.status_code === 200) {
+          this.fetchStudents();
+          console.log("Added student:", updatedStudent);
+        } else {
+          console.error('Failed to add student:', response.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error adding student:', error);
+      });
+  }
+
+  this.closeModal();
+}, 
+
+  }
+}
 </script>

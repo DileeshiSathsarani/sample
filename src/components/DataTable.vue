@@ -6,8 +6,8 @@
 
         <span>{{ props.row[column.field] }}</span>
         <div v-if="column.label === 'Actions'" class="buttons">
-          <b-button type="is-primary" size="is-small" @click.prevent="editItem(props.row, props.index)">Edit</b-button> |
-          <b-button type="is-danger" size="is-small" @click.prevent="deleteItem(props.row)">Delete</b-button>
+          <b-button type="is-primary" size="is-small" @click.prevent="emitEditUser(props.row, props.index)">Edit</b-button> |
+          <b-button type="is-danger" size="is-small" @click.prevent="emitDeleteUser(props.index)">Delete</b-button>
         </div>
       </b-table-column>
     </b-table>
@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import { eventBus } from '@/App';
 
 export default {
   props: {
@@ -33,11 +32,15 @@ export default {
     },
     editAction: Function,
     deleteAction: Function,
-  },
+  },   
+	emits: ['edit-user', 'delete-user'],
   methods: {
-    editItem(row, index) {
-      eventBus.$emit('edit-item', { row, index });
-    },
-  },
+		emitEditUser(id) {
+			this.$emit('edit-user', id);
+		},
+		emitDeleteUser(id) {
+			this.$emit('delete-user', id);
+		}
+	}
 };
 </script>

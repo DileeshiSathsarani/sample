@@ -2,41 +2,58 @@
   <div>
     <h1>Subject Details</h1>
 
-    <!-- Buefy Modal for Adding and Editing -->
+    <!-- Buefy Modal for Adding -->
     <b-modal :active.sync="isModalActive" :title="modalTitle">
-      <div>
-        <label for="subjectCode">Subject Code</label>
-        <b-input v-model="modalSubjectCode"></b-input>
+      <div class="modal-style">
+        <div>
+          <label for="subjectCode">Subject Code</label>
+          <b-input v-model="modalSubjectCode"></b-input>
 
-        <label for="subjectName">Subject Name</label>
-        <b-input v-model="modalSubjectName"></b-input>
-      </div>
+          <label for="subjectName">Subject Name</label>
+          <b-input v-model="modalSubjectName"></b-input>
+        </div>
 
-      <div class="buttons">
-        <b-button @click="saveSubjectChanges">{{ modalAction }}</b-button>
-        <b-button @click="closeModal">Cancel</b-button>
+        <div class="buttons">
+          <b-button @click="saveSubjectChanges">{{ modalAction }}</b-button>
+          <b-button @click="closeModal">Cancel</b-button>
+        </div>
       </div>
     </b-modal>
 
+    <!-- Subject Edit Modal -->
+    <subject-edit-modal
+      v-if="isModalActive"
+      :editedSubject.sync="editedSubject"
+      :modal-title="modalTitle"
+      @close="closeModal"
+      @save-changes="saveSubjectChanges"
+    ></subject-edit-modal>
+
     <!-- Subjects Table -->
-    <data-table :data="subjects" :columns="subjectColumns" :hasActions="true" :editAction="openEditModal" :deleteAction="deleteSubject">
+    <data-table :data="subjects" :columns="subjectColumns" :hasActions="true" @delete-user="handleDeleteUser">
+      <template v-slot:actions="{ index }">
+        <button class="edit-button" @click="openEditModal(index)">Edit</button>
+        <button class="delete-button" @click="deleteStudent(index)">Delete</button>
+      </template>
     </data-table>
 
     <!-- Add Button -->
     <div class="add-button-container">
-      <b-button class="add-button" @click="openAddModal">Add Subject</b-button>
+      <b-button type="is-info" @click="openAddModal">Add Subject</b-button>
     </div>
   </div>
 </template>
 
 <script>
 import DataTable from '@/components/DataTable.vue';
+import SubjectEditModal from '@/components/SubjectEditModal.vue';
 import axios from 'axios';
 
 export default {
   name: 'SubjectDetails',
   components: {
     DataTable,
+    SubjectEditModal
   },
   data() {
     return {
@@ -47,7 +64,7 @@ export default {
       modalSubjectCode: '',
       modalSubjectName: '',
       editedSubjectIndex: null,
-      
+      editedSubject: null,
     };
   },
   computed: {
@@ -88,6 +105,7 @@ export default {
       this.editedSubjectIndex = index;
       this.modalSubjectCode = this.subjects[index].subject_code;
       this.modalSubjectName = this.subjects[index].subject_name;
+      this.editedSubject = { ...this.subjects[index] };
     },
 
     saveSubjectChanges() {
@@ -96,8 +114,7 @@ export default {
         subject_name: this.modalSubjectName,
       };
 
-      if (this.editedSubjectIndex !== null) {
-        // Editing an existing subject
+      if (this.editedSubjectIndex !== null) { 
         axios.put(`http://localhost:5029/api/Subject/${this.subjects[this.editedSubjectIndex].subject_code}`, updatedSubject)
           .then(response => {
             if (response.data.status_code === 200) {
@@ -111,7 +128,6 @@ export default {
             console.error('Error editing subject:', error);
           });
       } else {
-        // Adding a new subject
         axios.post('http://localhost:5029/api/Subject/save', updatedSubject)
           .then(response => {
             if (response.data.status_code === 200) {
@@ -134,7 +150,7 @@ export default {
       this.editedSubjectIndex = null;
     },
 
-    deleteSubject(index) {
+    handleDeleteUser(index) {
       const deletedSubject = { ...this.subjects[index] };
 
       if (confirm(`Are you sure you want to delete ${deletedSubject.subject_code}?`)) {
@@ -152,7 +168,22 @@ export default {
           });
       }
     },
+    deletedSubject(index) {
+    console.log(index);
+     
+    },
   },
 };
 </script>
+
+<style scoped>
+.modal-style{
+  width: 500px;
+  height: 225px;
+  background-color: grey;
+  margin: auto;
+}
+
+
+</style>
 
