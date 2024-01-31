@@ -160,7 +160,7 @@ export default {
     async fetchUserData(id) {
       try {
         const response = await axios.get(`http://localhost:5029/api/Student/search/${id}`);
-        console.log(response.data.first_name,"llllllllllllll")
+        console.log(response.data.first_name,"ll")
         const userData = response.data;
         
 

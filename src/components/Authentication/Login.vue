@@ -63,7 +63,7 @@ export default {
 
       console.log(person);
 
-      const response = await axios.get('http://localhost:5029/api/Student/id', person);
+      const response = await axios.post('http://localhost:5029/api/Student/login', person);
         if (response.data.status_code) {
           
           this.$router.push('/student-details');

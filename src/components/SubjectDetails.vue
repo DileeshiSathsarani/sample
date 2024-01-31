@@ -1,9 +1,15 @@
+<!-- SubjectDetails.vue -->
+
 <template>
   <div>
     <h1>Subject Details</h1>
 
-    <!-- Buefy Modal for Adding -->
-    <b-modal :active.sync="isModalActive" :title="modalTitle">
+    <!-- Subjects Table -->
+    <data-table :data="subjects" :columns="subjectColumns" :hasActions="true" @edit-user="openEditModal" @delete-user="handleDeleteUser">
+    </data-table>
+
+    <!-- Buefy Modal for Adding and Editing -->
+    <b-modal :active.sync="isComponentModalActive" :title="modalTitle">
       <div class="modal-style">
         <div>
           <label for="subjectCode">Subject Code</label>
@@ -20,23 +26,6 @@
       </div>
     </b-modal>
 
-    <!-- Subject Edit Modal -->
-    <subject-edit-modal
-      v-if="isModalActive"
-      :editedSubject.sync="editedSubject"
-      :modal-title="modalTitle"
-      @close="closeModal"
-      @save-changes="saveSubjectChanges"
-    ></subject-edit-modal>
-
-    <!-- Subjects Table -->
-    <data-table :data="subjects" :columns="subjectColumns" :hasActions="true" @delete-user="handleDeleteUser">
-      <template v-slot:actions="{ index }">
-        <button class="edit-button" @click="openEditModal(index)">Edit</button>
-        <button class="delete-button" @click="deleteStudent(index)">Delete</button>
-      </template>
-    </data-table>
-
     <!-- Add Button -->
     <div class="add-button-container">
       <b-button type="is-info" @click="openAddModal">Add Subject</b-button>
@@ -46,39 +35,40 @@
 
 <script>
 import DataTable from '@/components/DataTable.vue';
-import SubjectEditModal from '@/components/SubjectEditModal.vue';
 import axios from 'axios';
 
 export default {
   name: 'SubjectDetails',
   components: {
-    DataTable,
-    SubjectEditModal
+    DataTable
   },
+
   data() {
     return {
       subjects: [],
-      isModalActive: false,
-      modalTitle: '',
-      modalAction: '',
+      isComponentModalActive: false,
+      editedSubject: null,
+      modalTitle: 'Add Subject',
+      modalAction: 'Add Subject',
       modalSubjectCode: '',
       modalSubjectName: '',
-      editedSubjectIndex: null,
-      editedSubject: null,
     };
   },
+
   computed: {
     subjectColumns() {
       return [
         { field: 'subject_code', label: 'Subject Code' },
         { field: 'subject_name', label: 'Subject Name' },
-        { field:'actions' , label:'Actions'},
+        { field: 'actions', label: 'Actions' },
       ];
     },
   },
+
   created() {
     this.fetchSubjects();
   },
+
   methods: {
     fetchSubjects() {
       axios.get('http://localhost:5029/api/Subject/list')
@@ -91,21 +81,25 @@ export default {
     },
 
     openAddModal() {
-      this.isModalActive = true;
+      this.isComponentModalActive = true;
       this.modalTitle = 'Add Subject';
       this.modalAction = 'Add Subject';
       this.modalSubjectCode = '';
       this.modalSubjectName = '';
+      this.editedSubject = null;
     },
 
     openEditModal(index) {
-      this.isModalActive = true;
+      this.isComponentModalActive = true;
       this.modalTitle = 'Edit Subject';
       this.modalAction = 'Save Changes';
-      this.editedSubjectIndex = index;
       this.modalSubjectCode = this.subjects[index].subject_code;
       this.modalSubjectName = this.subjects[index].subject_name;
       this.editedSubject = { ...this.subjects[index] };
+    },
+
+    closeModal() {
+      this.isComponentModalActive = false;
     },
 
     saveSubjectChanges() {
@@ -114,8 +108,8 @@ export default {
         subject_name: this.modalSubjectName,
       };
 
-      if (this.editedSubjectIndex !== null) { 
-        axios.put(`http://localhost:5029/api/Subject/${this.subjects[this.editedSubjectIndex].subject_code}`, updatedSubject)
+      if (this.editedSubject !== null) {
+        axios.put(`http://localhost:5029/api/Subject/${this.editedSubject.subject_code}`, updatedSubject)
           .then(response => {
             if (response.data.status_code === 200) {
               this.fetchSubjects();
@@ -145,11 +139,6 @@ export default {
       this.closeModal();
     },
 
-    closeModal() {
-      this.isModalActive = false;
-      this.editedSubjectIndex = null;
-    },
-
     handleDeleteUser(index) {
       const deletedSubject = { ...this.subjects[index] };
 
@@ -168,22 +157,15 @@ export default {
           });
       }
     },
-    deletedSubject(index) {
-    console.log(index);
-     
-    },
   },
 };
 </script>
 
 <style scoped>
-.modal-style{
+.modal-style {
   width: 500px;
   height: 225px;
   background-color: grey;
   margin: auto;
 }
-
-
 </style>
-
