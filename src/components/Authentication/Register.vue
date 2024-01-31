@@ -65,6 +65,16 @@
     </form>
   </ValidationObserver>
 </base-card>
+<!-- Success Notification -->
+<b-notification :is-active="successNotification.isActive" type="is-success" has-icon aria-close-label="Close notification">
+    {{ successNotification.message }}
+  </b-notification>
+
+  <!-- Warning Notification -->
+  <b-notification :is-active="warningNotification.isActive" type="is-warning" has-icon aria-close-label="Close notification" role="alert">
+    {{ warningNotification.message }}
+  </b-notification>
+
 </template>
 
 <script>
@@ -111,7 +121,16 @@ export default {
         contactnumber: '',
         username: '',
       },
+      successNotification: {
+        isActive: false,
+        message: '',
+      },
+      warningNotification: {
+        isActive: false,
+        message: '',
+      },
     };
+    
   },
 
   created() {
@@ -137,6 +156,7 @@ export default {
           const response = await axios.put(`http://localhost:5029/api/Student/${this.$route.params.id}`, person);
           if (response.data.status_code === 200) {
             console.log('Student updated successfully');
+            this.showSuccessNotification('Student registered successfully');
             this.$router.push('/student-details');
           } else {
             console.error('Failed to update student:', response.data.message);
@@ -154,6 +174,7 @@ export default {
         }
       } catch (error) {
         console.error('Error during registration:', error);
+        this.showWarningNotification('Registration failed');
       }
     },
 
@@ -179,6 +200,21 @@ export default {
 
       
   },
+  showSuccessNotification(message) {
+      this.successNotification.isActive = true;
+      this.successNotification.message = message;
+      setTimeout(() => {
+        this.successNotification.isActive = false;
+      }, 5000); 
+    },
+
+    showWarningNotification(message) {
+      this.warningNotification.isActive = true;
+      this.warningNotification.message = message;
+      setTimeout(() => {
+        this.warningNotification.isActive = false;
+      }, 5000); 
+    },
 
   },
 };

@@ -8,13 +8,10 @@ import SubjectDetailsComponent from '../components/SubjectDetails.vue';
 import Buefy from 'buefy';
 import 'buefy/dist/buefy.css';
 
-
 Vue.use(Buefy);
 Vue.use(Router);
 
-
-export default new Router({
- 
+const router = new Router({
   routes: [
     {
       path: '/login',
@@ -27,22 +24,39 @@ export default new Router({
       component: RegisterComponent,
     }, 
     {
-        path: '/student-details',
-        name: 'StudentDetails',
-        component: StudentDetailsComponent, 
+      path: '/student-details',
+      name: 'StudentDetails',
+      component: StudentDetailsComponent, 
+      meta: { requiresAuth: true },
     },
-
     {
       path: '/subject-details', 
       name: 'SubjectDetails',
       component: SubjectDetailsComponent,
+      meta: { requiresAuth: true },
     },
-
     {
       path: '/register/:id?', 
       name: 'register',
       component: RegisterComponent,
     },
   ],
- 
 });
+
+
+router.beforeEach((to, from, next) => {
+  
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log("token")
+      next();
+    } else {
+      next({ name: 'Login' });
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;

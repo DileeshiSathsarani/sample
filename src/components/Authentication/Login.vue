@@ -65,7 +65,8 @@ export default {
 
       const response = await axios.post('http://localhost:5029/api/Student/login', person);
         if (response.data.status_code) {
-          
+          console.log(response.data.data.token);
+          localStorage.setItem('token', response.data.data.token);
           this.$router.push('/student-details');
         } else {
           console.error('Login failed:', response.message);

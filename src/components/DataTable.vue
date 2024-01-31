@@ -6,28 +6,17 @@
 
         <span>{{ props.row[column.field] }}</span>
         <div v-if="column.label === 'Actions'" class="buttons">
-          <b-button type="is-primary" size="is-small" @click.prevent="emitEditUser(props.row, props.index)">Edit</b-button> 
+          <b-button type="is-primary" size="is-small" @click.prevent="emitEditUser(props.row, props.index)">Edit</b-button> |
           <b-button type="is-danger" size="is-small" @click.prevent="emitDeleteUser(props.index)">Delete</b-button>
         </div>
       </b-table-column>
     </b-table>
-
   </div>
 </template>
 
 <script>
 
 export default {
-  data(){
-    return {
-      isComponentModalActive: false,
-      editedFirstName: '',          
-      editedLastName: '',            
-      editedAddress: '',             
-      editedEmail: '',               
-      editedContactNumber: ''       
-    };
-  },
   props: {
     data: {
       type: Array,
@@ -43,35 +32,15 @@ export default {
     },
     editAction: Function,
     deleteAction: Function,
-  },  
+  },   
 	emits: ['edit-user', 'delete-user'],
   methods: {
 		emitEditUser(id) {
-      //console.log(id);
 			this.$emit('edit-user', id);
-      
-      this.isComponentModalActive = true
 		},
 		emitDeleteUser(id) {
 			this.$emit('delete-user', id);
-		},
-
-  saveChanges() {
-  const updatedStudent = {
-    id: this.editedStudent.id,
-    first_name: this.editedFirstName,
-    last_name: this.editedLastName,
-    address: this.editedAddress,
-    email: this.editedEmail,
-    contact_number: this.editedContactNumber,
-  };
-
-  if (updatedStudent.id) {
-    this.$emit('edit-user', updatedStudent);
-  } else {
-    console.error('Updated student does not have an id.');
-  }
-},
+		}
 	}
 };
 </script>

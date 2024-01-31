@@ -3,32 +3,23 @@
 <template>
   <div>
     <h1>Subject Details</h1>
-
-    <!-- Subjects Table -->
-    <data-table :data="subjects" :columns="subjectColumns" :hasActions="true" @edit-user="openEditModal" @delete-user="handleDeleteUser">
-    </data-table>
-
-    <!-- Buefy Modal for Adding and Editing -->
-    <b-modal :active.sync="isComponentModalActive" :title="modalTitle">
-      <div class="modal-style">
-        <div>
-          <label for="subjectCode">Subject Code</label>
-          <b-input v-model="modalSubjectCode"></b-input>
-
-          <label for="subjectName">Subject Name</label>
-          <b-input v-model="modalSubjectName"></b-input>
-        </div>
-
-        <div class="buttons">
-          <b-button @click="saveSubjectChanges">{{ modalAction }}</b-button>
-          <b-button @click="closeModal">Cancel</b-button>
-        </div>
-      </div>
-    </b-modal>
-
-    <!-- Add Button -->
-    <div class="add-button-container">
-      <b-button type="is-info" @click="openAddModal">Add Subject</b-button>
+    <template v-if="subjects.length > 0"> 
+      <DataTable :data="paginatedSubjects" :columns="subjectColumns" :hasActions="true" @edit-subject="handleEditSubject" @delete-subject="handleDeleteSubject">
+        <template v-slot:actions="{ index }">
+          <button class="edit-button" @click="openEditSubjectModal(index)">Edit</button>
+          <button class="delete-button" @click="deleteSubject(index)">Delete</button>
+        </template>
+      </DataTable>
+    </template>
+    
+    <!-- Pagination Section for Subjects -->
+    <div class="mt-3" v-if="subjects.length > 0"> 
+      <b-pagination
+        v-model="subjectCurrentPage"
+        :total-rows="subjectTotalRows"
+        :per-page="pageSize"
+        aria-controls="subject-table"
+      ></b-pagination>
     </div>
   </div>
 </template>
@@ -47,6 +38,8 @@ export default {
     return {
       subjects: [],
       isComponentModalActive: false,
+      subjectCurrentPage: 1,
+      pageSize: 5,
       editedSubject: null,
       modalTitle: 'Add Subject',
       modalAction: 'Add Subject',
@@ -62,6 +55,14 @@ export default {
         { field: 'subject_name', label: 'Subject Name' },
         { field: 'actions', label: 'Actions' },
       ];
+    },
+    subjectTotalRows() {
+      return this.subjects.length;
+    },
+    paginatedSubjects() {
+      const startIndex = (this.subjectCurrentPage - 1) * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+      return this.subjects.slice(startIndex, endIndex);
     },
   },
 

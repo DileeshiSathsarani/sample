@@ -3,7 +3,7 @@
   <form action="">
     <div class="modal-card" style="width: auto">
       <header class="modal-card-head">
-        <p class="modal-card-title">Edit Student form</p>
+        <p class="modal-card-title">Edit Student</p>
         <button type="button" class="delete" @click="$emit('close')"/>
       </header>
       <section class="modal-card-body">
@@ -33,55 +33,27 @@
 
 <script>
 export default {
-  props: ['editStudent', 'canCancel','student'],
- 
+  props: ['student', 'canCancel'],
   data() {
     return {
-      editedId:this.student.id,
-        editedFirstName:this.student.first_name,
+        editedFirstName: this.student.first_name,
         editedLastName: this.student.last_name,
         editedAddress: this.student.address,
         editedEmail: this.student.email,
         editedContactNumber: this.student.contact_number,
 };
   },
-  mounted() {
-    this.base();
-  },
-//   methods: {
-//     base(){
-//       console.log("Model Loaded");
-//       console.log(this.student);
-//     },
-//     saveChanges(updatedStudent) {
-//  const updatedStudent = {
-//           first_name: this.editedFirstName,
-//           last_name: this.editedLastName,
-//           address: this.editedAddress,          
-//           email: this.editedEmail,
-//           contact_number: this.editedContactNumber,
-//  };
-//       this.$emit('save-changes', this.editedStudent);
-//     },
-//   },
-
-methods: {
-    base() {
-      console.log("Model Loaded");
-      console.log(this.student);
-    },
+  methods: {
     saveChanges() {
-    let updatedStudent = {
-      id : this.editedId,
-      first_name: this.editedFirstName,
-      last_name: this.editedLastName,
-      address: this.editedAddress,
-      email: this.editedEmail,
-      contact_number: this.editedContactNumber,
-    };
-   // console.log('Save Changes Emitted:', updatedStudent);
-    this.$emit('save-changes', updatedStudent);
-  },
+      const updatedStudent = {
+          first_name: this.editedFirstName,
+          last_name: this.editedLastName,
+          address: this.editedAddress,
+          email: this.editedEmail,
+          contact_number: this.editedContactNumber,
+};
+      this.$emit('edit-user', updatedStudent);
+    },
   },
 };
 </script>
